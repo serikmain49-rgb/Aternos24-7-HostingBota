@@ -1,1 +1,361 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BotFrutline - Minecraft Bot Monitor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .title {
+            font-size: 42px;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 14px;
+            letter-spacing: 1px;
+        }
+
+        .card {
+            background: rgba(15, 20, 40, 0.8);
+            border: 1px solid rgba(0, 255, 200, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(0, 255, 200, 0.5);
+            box-shadow: 0 0 20px rgba(0, 255, 200, 0.1);
+        }
+
+        .card-label {
+            color: #888;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .card-value {
+            font-size: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 2s infinite;
+        }
+
+        .status-online {
+            background: #00ff88;
+            box-shadow: 0 0 10px #00ff88;
+        }
+
+        .status-connecting {
+            background: #ffaa00;
+            animation: pulse-warn 1s infinite;
+        }
+
+        .status-offline {
+            background: #ff4444;
+        }
+
+        .status-text {
+            color: #00ff88;
+        }
+
+        .status-text.warn {
+            color: #ffaa00;
+        }
+
+        .status-text.error {
+            color: #ff4444;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @keyframes pulse-warn {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .uptime {
+            color: #00ff88;
+            font-size: 24px;
+        }
+
+        .coordinates {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .coord {
+            flex: 1;
+            min-width: 100px;
+        }
+
+        .coord-label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .coord-value {
+            color: #00ff88;
+            font-size: 18px;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+        }
+
+        .server-info {
+            color: #00ff88;
+            font-size: 16px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .guide-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #00ffaa 0%, #00dd88 100%);
+            border: none;
+            border-radius: 10px;
+            color: #000;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .guide-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 255, 170, 0.3);
+        }
+
+        .guide-btn:active {
+            transform: translateY(0);
+        }
+
+        .refresh-info {
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+            margin-top: 20px;
+        }
+
+        .error-message {
+            background: rgba(255, 68, 68, 0.1);
+            border: 1px solid rgba(255, 68, 68, 0.3);
+            color: #ff8888;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .loading {
+            color: #ffaa00;
+            font-style: italic;
+        }
+
+        @media (max-width: 600px) {
+            .title {
+                font-size: 32px;
+            }
+
+            .card-value {
+                font-size: 18px;
+            }
+
+            .uptime {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🤖</div>
+            <div class="title">BotFrutline</div>
+            <div class="subtitle">MINECRAFT BOT MONITOR</div>
+        </div>
+
+        <div class="card">
+            <span class="card-label">STATUS</span>
+            <div class="card-value">
+                <span class="status-dot status-online"></span>
+                <span class="status-text" id="status">Connecting...</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <span class="card-label">UPTIME</span>
+            <div class="card-value">
+                <span class="uptime" id="uptime">00h 00m 00s</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <span class="card-label">COORDINATES</span>
+            <div class="coordinates">
+                <div class="coord">
+                    <div class="coord-label">X</div>
+                    <div class="coord-value" id="coordX">0</div>
+                </div>
+                <div class="coord">
+                    <div class="coord-label">Y</div>
+                    <div class="coord-value" id="coordY">0</div>
+                </div>
+                <div class="coord">
+                    <div class="coord-label">Z</div>
+                    <div class="coord-value" id="coordZ">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <span class="card-label">SERVER</span>
+            <div class="card-value">
+                <span class="server-info" id="server">Loading...</span>
+            </div>
+        </div>
+
+        <button class="guide-btn" onclick="window.open('https://github.com/serikmain49-rgb/minecraft-bot', '_blank')">
+            📚 View Setup Guide
+        </button>
+
+        <div class="error-message" id="errorBox" style="display: none;">
+            <strong>⚠️ Ошибка:</strong><br>
+            <span id="errorText"></span>
+        </div>
+
+        <div class="refresh-info">
+            Auto-refreshing every 3s
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '/api/status';
+        let statusDot = document.querySelector('.status-dot');
+
+        async function updateStatus() {
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+
+                // Статус
+                const statusEl = document.getElementById('status');
+                const errorBox = document.getElementById('errorBox');
+                const errorText = document.getElementById('errorText');
+
+                statusEl.textContent = data.status;
+                statusEl.className = 'status-text';
+                statusDot.className = 'status-dot';
+
+                if (data.status === 'ONLINE') {
+                    statusDot.classList.add('status-online');
+                    errorBox.style.display = 'none';
+                } else if (data.status === 'CONNECTING') {
+                    statusDot.classList.add('status-connecting');
+                    statusEl.classList.add('warn');
+                    errorBox.style.display = 'none';
+                } else {
+                    statusDot.classList.add('status-offline');
+                    statusEl.classList.add('error');
+                    if (data.lastError) {
+                        errorBox.style.display = 'block';
+                        errorText.textContent = data.lastError;
+                    }
+                }
+
+                // Uptime
+                const uptime = data.uptime || 0;
+                const hours = Math.floor(uptime / 3600);
+                const minutes = Math.floor((uptime % 3600) / 60);
+                const seconds = uptime % 60;
+                document.getElementById('uptime').textContent = 
+                    `${hours}h ${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`;
+
+                // Координаты
+                if (data.coordinates) {
+                    document.getElementById('coordX').textContent = data.coordinates.x || 'N/A';
+                    document.getElementById('coordY').textContent = data.coordinates.y || 'N/A';
+                    document.getElementById('coordZ').textContent = data.coordinates.z || 'N/A';
+                } else {
+                    document.getElementById('coordX').textContent = 'Searching...';
+                    document.getElementById('coordY').textContent = 'Searching...';
+                    document.getElementById('coordZ').textContent = 'Searching...';
+                }
+
+                // Сервер
+                document.getElementById('server').textContent = `${data.server}:${data.port}`;
+
+            } catch (error) {
+                console.error('Error fetching status:', error);
+                document.getElementById('status').textContent = 'Offline';
+                document.getElementById('status').className = 'status-text error';
+                statusDot.className = 'status-dot status-offline';
+            }
+        }
+
+        // Обновление каждые 3 секунды
+        updateStatus();
+        setInterval(updateStatus, 3000);
+    </script>
+</body>
+</html>
