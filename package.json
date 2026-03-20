@@ -1,0 +1,19 @@
+{
+  "name": "minecraft-wandering-bot",
+  "version": "1.0.0",
+  "description": "Minecraft Java Edition bot that jumps and walks 24/7",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js",
+    "dev": "nodemon bot.js"
+  },
+  "dependencies": {
+    "mineflayer": "^4.13.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}
